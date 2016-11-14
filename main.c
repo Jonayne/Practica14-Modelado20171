@@ -1,5 +1,4 @@
 #include "main.h"
-#include <stdlib.h>
 
 /*Función que inserta números aleatorios en una lista*/
 void inserta_datos_de_prueba(Lista lista);
@@ -16,8 +15,10 @@ int main()
 
 	// Se remueve un elemento de la lista
 	Elemento *borrado = quita_elemento(lista, 0);
-	if (borrado != NULL) free(borrado->valor);
-	free(borrado);
+	if (borrado != NULL){
+		free(borrado->valor);
+		free(borrado);
+	}
 	printf("La lista tiene %lu elementos después de borrar la cabeza:\n", longitud(lista));
 	
 	// Se remueve un elemento que no existe en la lista
@@ -59,7 +60,7 @@ int inserta_elemento(Lista lista, void *value){
 		return tam+1;
 }
 
-// Función que compara dos enteros.
+// Función que compara dos valores de "Elementos" de una lista ligada.
 int cmp_int(const void * a, const void * b){
     int value_a = *((int *)a);
     int value_b = *((int *)b);
@@ -88,7 +89,7 @@ void ordena_lista(Lista lista, int(*cmp)(const void*, const void*)){
 		arreglo[i]= *(int*)next -> valor; //Hacemos un arreglo con los valores de la lista.
 		next= next -> siguiente;
 	}
-	qsort(arreglo, tam, sizeof(int), cmp_int); //Mandamos a llamar a QSORT para que ordene por nosotros el arreglo, con nuestra función comparadora.
+	qsort(arreglo, tam, sizeof(int), (*cmp)); //Mandamos a llamar a QSORT para que ordene por nosotros el arreglo, con nuestra función comparadora.
 	next= *lista;
 	for(int i= 0; i < tam; i++){
 		*(int*)next -> valor = arreglo[i]; //Pasamos los valores del arreglo ordenado a la lista.
@@ -103,16 +104,19 @@ void borra_lista(Lista lista){
 	Elemento* element;
 	for(int i= 0; i < tam; i++){
 		element= quita_elemento(lista, 0);
-		if (element != NULL) free(element -> valor); //Borramos cada elemento de la lista, y nos aseguramos de liberar la memoria.
-		free(element);
+		if (element != NULL){
+			free(element -> valor); //Borramos cada elemento de la lista, y nos aseguramos de liberar la memoria.
+			free(element);
+		}
 	}
+	free(lista);
 }
 
 /*Remueve un elemento de una lista en una posición dada*/
 //Si la posición no coincide con ningún elemento se regresa NULL
 Elemento* quita_elemento(Lista lista, size_t posicion){
 	size_t tam= longitud(lista);
-	if(posicion >= tam) return NULL; //Si la posición es ilegal, no hacemos nada.
+	if(posicion >= tam || posicion < 0) return NULL; //Si la posición es ilegal, no hacemos nada.
 
 	if(posicion == 0){ //Si es la cabeza.
 
@@ -128,7 +132,7 @@ Elemento* quita_elemento(Lista lista, size_t posicion){
 		Elemento* prev_to_last= *lista;
 
 		for(int i= 1; i < tam-1; i++){
-			prev_to_last= (*lista) -> siguiente;
+			prev_to_last= prev_to_last -> siguiente;
 		}
 		Elemento* last= prev_to_last -> siguiente;
 		prev_to_last -> siguiente = NULL;
@@ -137,12 +141,11 @@ Elemento* quita_elemento(Lista lista, size_t posicion){
 
 		return last;
 	}else{	//Si no es ninguno de los anteriores.
-	   	int i= 0;
 	   	Elemento* next= *lista;
-	   	while(next != NULL){
+	   	for(int i= 0; i < tam; i++){
 			if(i == posicion-1){
 				Elemento* aux= next -> siguiente;
-				Elemento* a_borrar= next -> siguiente;
+				Elemento* a_borrar= aux;
 				Elemento* el_sig= a_borrar -> siguiente; //AHHHHHHH, odio acomodar referencias T_T.
 				next -> siguiente= el_sig;
 				a_borrar -> siguiente = NULL;
@@ -151,7 +154,6 @@ Elemento* quita_elemento(Lista lista, size_t posicion){
 				return aux;
 			}
 			next= next -> siguiente;
-		  	i+=1;
 		}
 	}
 }
